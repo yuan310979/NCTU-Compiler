@@ -1,0 +1,15 @@
+#pragma symbol off
+#pragma token off
+#pragma source off
+#pragma statistic off
+
+const bool b=1;					//error
+int foo(int a, float b);
+
+void main(){
+
+
+	return 6.33;				//error
+}
+
+int foo(int c){}				//error

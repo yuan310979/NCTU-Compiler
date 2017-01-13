@@ -1,0 +1,20 @@
+#pragma source on
+#pragma token off
+#pragma statistic on
+
+int main()
+{
+        int a = 33333334,b, aaaaaaaaaabbbbbbbbbbccccccccccddd;
+        string c = "I'm Peter";
+float aaa = 3.20202021;
+double ggg = 7e-21;
+bool nice = true;
+a = 1+1;
+        a = a+a;
+        a = a-3*4;
+        b = a*11;
+        b = a/b;
+        a = b/3;
+        b = 12345 % a;
+        return 0;
+}

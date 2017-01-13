@@ -1,0 +1,17 @@
+#pragma source off
+#pragma token off
+#pragma statistic off
+
+int main()
+{
+        int a,b;
+
+        a = 1+1;
+        a = a+a;
+        a = a-3*4;
+        b = a*11;
+        b = a/b;
+        a = b/3;
+        b = 12345 % a;
+        return 0;
+}

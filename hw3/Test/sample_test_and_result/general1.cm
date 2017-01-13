@@ -1,0 +1,29 @@
+#pragma source off
+#pragma token off
+#pragma statistic off
+void func1();
+bool func2(int e);
+int a = -1;
+int b[5] = {1,2,3,4,5};
+int c[5];
+void general1()
+{
+    int ii;
+    for(i =10; i<15; i = i+1)
+	{	
+		b[i-10+1] = i*i;
+        c[i*10+1] = i-b[i-10+1];
+	}
+}
+
+
+void func1()
+{
+    print "qoo";
+}
+
+bool func2(int e)
+{
+        return (e > 10);
+}
+

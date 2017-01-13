@@ -1,0 +1,16 @@
+#pragma source off
+#pragma token off
+#pragma statistic off
+int main()
+{
+
+        bool a, b;
+        bool c;
+
+        a = true;
+        b = false;
+        c = a && b;
+        c = b && false;
+        c = a || true;
+        c = a && b || true && false;
+}
