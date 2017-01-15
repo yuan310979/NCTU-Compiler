@@ -8,6 +8,7 @@
 void Initialization(){
 	true_index = 0;
 	false_index = 0;
+	if_index = 0;
 	fprintf(fpout, ".class public test\n");
 	fprintf(fpout, ".super java/lang/Object\n");
 	fprintf(fpout, ".field public static _sc Ljava/util/Scanner;\n");
@@ -407,4 +408,36 @@ void GenFuncInvoke(const char* name){
 	else if(!strcmp(PrintType(t->type,0), "void")){
 		fprintf(fpout, "V\n");
 	}
+}
+
+void GenIfStatement(){
+	fprintf(fpout, "\tifeq Lelse_%d\n", if_index);
+}
+
+void GenIfElse(){
+	fprintf(fpout, "\tgoto Lexit_%d\n", if_index);
+	fprintf(fpout, "Lelse_%d:\n", if_index);
+}
+
+void GenIfEnd(){
+	fprintf(fpout, "Lexit_%d:\n", if_index++);
+}
+
+void GenIfWithoutElse(){
+	fprintf(fpout, "\tgoto Lexit_%d\n", if_index);
+	fprintf(fpout, "Lelse_%d:\n", if_index);
+	fprintf(fpout, "Lexit_%d:\n", if_index++);
+}
+
+void GenControlStart(){
+	fprintf(fpout, "Lbegin_%d:\n", if_index);
+}
+
+void GenControlFlag(){
+	fprintf(fpout, "\tifeq Lexit_%d\n", if_index);
+}
+
+void GenForEnd(){
+	fprintf(fpout, "\tgoto Lbegin_%d\n", if_index);
+	fprintf(fpout, "Lexit_%d:\n", if_index++);
 }

@@ -7,6 +7,7 @@ extern int error;
 
 int true_index;
 int false_index;
+int if_index;
 
 void Initialization();
 void GenGlobalVarFromList(IdList*);
@@ -27,3 +28,10 @@ void GenFuncInitialization(const char*);
 void GenFuncEnd(const char*);
 void GenReturn(Expr*);
 void GenFuncInvoke(const char*);
+void GenIfStatement();
+void GenIfElse();
+void GenIfEnd();
+void GenIfWithoutElse();
+void GenControlStart();
+void GenControlFlag();
+void GenForEnd();

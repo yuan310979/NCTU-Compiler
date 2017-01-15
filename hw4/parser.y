@@ -266,28 +266,40 @@ arr_reference_square : arr_reference_square square_expression   { current_dim++;
 square_expression : LEFT_SQUARE expression RIGHT_SQUARE
                   ;
 
-conditional : IF LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES compound ELSE compound 
-            | IF LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES compound
+conditional : ifconditional compound ELSE {GenIfElse();} compound {GenIfEnd();}
+            | ifconditional compound {GenIfWithoutElse();}
             ;
+
+ifconditional : IF LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES    {GenIfStatement();}
+              ;
 
 boolean_expression : expression     {CheckBool($1);}
                    ;
 
-while : WHILE LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES
+while : WHILE LEFT_PARENTHESES
+        {
+          GenControlStart();
+        }
+        boolean_expression RIGHT_PARENTHESES
         {
           is_forwhile = 1;
+          GenControlFlag();
         }
         compound
         {
           is_forwhile = 0;
+          GenForEnd();
         }
       | DO
         {
+          GenControlStart();
           is_forwhile = 1;
         } 
         compound WHILE LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES SEMICOLON
         {
           is_forwhile = 0;
+          GenControlFlag();
+          GenForEnd();
         }
       ;
 
@@ -297,6 +309,7 @@ for : FOR LEFT_PARENTHESES initial_expression SEMICOLON control_expression SEMIC
       }
       compound
       {
+        GenForEnd();
         is_forwhile = 0;
       }
     ;
@@ -306,15 +319,15 @@ jump : RETURN expression SEMICOLON        {CheckFuncReturn(return_buf, $2); has_
      | CONTINUE SEMICOLON                 {CheckForWhile(is_forwhile);}
      ;
 
-initial_expression : ID ASSIGN expression
-                   | expression
+initial_expression : variable_reference ASSIGN expression       {GenVarStore($1);  GenControlStart();}
+                   | expression                                 {GenControlStart();}
                    ;
 
-control_expression : ID ASSIGN expression       {CheckBool($3);}
-                   | expression                 {CheckBool($1);}
+control_expression : variable_reference ASSIGN expression       {CheckBool($3); GenVarStore($1); GenControlFlag();}
+                   | expression                                 {CheckBool($1); GenControlFlag();}
                    ;
 
-increment_expression : ID ASSIGN expression
+increment_expression : variable_reference ASSIGN expression      {GenVarStore($1);}
                      | expression
                      ;
 

@@ -821,10 +821,12 @@ TableEntry* FindEntryInLocalLoop(SymbolTable* st, const char* name)
 {
     int max_level = -1;
     TableEntry* it;
+    TableEntry* final;
     for (int i = 0; i < st->current_size; i++) {
         it = st->Entries[i];
         if (!strcmp(name, it->name) && it->level != 0 && it->level > max_level) {
             max_level = it->level;
+            final = it;
         }
     }
     if(max_level == -1){
@@ -832,7 +834,7 @@ TableEntry* FindEntryInLocalLoop(SymbolTable* st, const char* name)
     }
     else{
     	//printf("%s:%d\n", it->name, it->level);
-    	return it;
+    	return final;
     }
     
 }
@@ -1218,7 +1220,7 @@ void CheckReturnLastLine(int r){
 int CheckType(Expr* LHS, Expr* RHS){
 	if(LHS == NULL || RHS == NULL)
 		return 0;
-	if (!strcmp(LHS->kind, "error") || strcmp(RHS->kind, "err") == 0)
+	if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error"))
         return 0;
     if(!strcmp(LHS->entry->kind, "constant")){
     	printf("Error at Line#%d: Re-assign to constants are not allowed\n", linenum);
