@@ -8,8 +8,9 @@
 void Initialization(){
 	true_index = 0;
 	false_index = 0;
-	fprintf(fpout, ".class public output\n");
+	fprintf(fpout, ".class public test\n");
 	fprintf(fpout, ".super java/lang/Object\n");
+	fprintf(fpout, ".field public static _sc Ljava/util/Scanner;\n");
 }
 
 void GenGlobalVarFromList(IdList* l){
@@ -48,16 +49,16 @@ void GenVarRef(Expr* e){
 	else if(!strcmp(e->entry->kind, "variable") || !strcmp(e->entry->kind, "parameter")){
 		if(e->entry->level == 0){
   			if(!strcmp(PrintType(e->entry->type,0), "int")){
-  				fprintf(fpout, "\tgetstatic output/%s I\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic test/%s I\n", e->entry->name);
   			}
   			else if(!strcmp(PrintType(e->entry->type,0), "float")){
-  				fprintf(fpout, "\tgetstatic output/%s F\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic test/%s F\n", e->entry->name);
   			}
   			else if(!strcmp(PrintType(e->entry->type,0), "double")){
-  				fprintf(fpout, "\tgetstatic output/%s D\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic test/%s D\n", e->entry->name);
   			}
   			else if(!strcmp(PrintType(e->entry->type,0), "bool")){
-  				fprintf(fpout, "\tgetstatic output/%s Z\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic test/%s Z\n", e->entry->name);
   			}
 		}
 		else{
@@ -225,16 +226,16 @@ void GenVarStore(Expr* e){
 	}
 	else{
 		if(!strcmp(PrintType(e->type, e->current_dimension), "int")){
-			fprintf(fpout, "\tputstatic output/%s I\n", e->entry->name);
+			fprintf(fpout, "\tputstatic test/%s I\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "float")){
-			fprintf(fpout, "\tputstatic output/%s F\n", e->entry->name);
+			fprintf(fpout, "\tputstatic test/%s F\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "double")){
-			fprintf(fpout, "\tputstatic output/%s D\n", e->entry->name);
+			fprintf(fpout, "\tputstatic test/%s D\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "bool")){
-			fprintf(fpout, "\tputstatic output/%s Z\n", e->entry->name);
+			fprintf(fpout, "\tputstatic test/%s Z\n", e->entry->name);
 		}
 	}
 }
@@ -248,17 +249,53 @@ void GenInitialStore(const char* name, Type* t){
 	}
 	else{
 		if(!strcmp(PrintType(t,0), "int")){
-			fprintf(fpout, "\tputstatic output/%s I\n", name);
+			fprintf(fpout, "\tputstatic test/%s I\n", name);
 		}
 		else if(!strcmp(PrintType(t,0), "float")){
-			fprintf(fpout, "\tputstatic output/%s F\n", name);
+			fprintf(fpout, "\tputstatic test/%s F\n", name);
 		}
 		else if(!strcmp(PrintType(t,0), "double")){
-			fprintf(fpout, "\tputstatic output/%s D\n", name);
+			fprintf(fpout, "\tputstatic test/%s D\n", name);
 		}
 		else if(!strcmp(PrintType(t,0), "bool")){
-			fprintf(fpout, "\tputstatic output/%s Z\n", name);
+			fprintf(fpout, "\tputstatic test/%s Z\n", name);
 		}
 		return;
 	}
+}
+
+void GenPrintInitialization(){
+	fprintf(fpout, "\tgetstatic java/lang/System/out Ljava/io/PrintStream;\n");
+}
+
+void GenPrintInvoke(Expr* e){
+	if(!strcmp(PrintType(e->type,0), "int"))
+		fprintf(fpout, "\tinvokevirtual java/io/PrintStream/print(I)V\n");
+	else if(!strcmp(PrintType(e->type,0), "float"))
+		fprintf(fpout, "\tinvokevirtual java/io/PrintStream/print(F)V\n");
+	else if(!strcmp(PrintType(e->type,0), "double"))
+		fprintf(fpout, "\tinvokevirtual java/io/PrintStream/print(D)V\n");
+	else if(!strcmp(PrintType(e->type,0), "bool"))
+		fprintf(fpout, "\tinvokevirtual java/io/PrintStream/print(Z)V\n");
+	else if(!strcmp(PrintType(e->type,0), "string"))
+		fprintf(fpout, "\tinvokevirtual java/io/PrintStream/print(Ljava/lang/String;)V\n");
+}
+
+void GenReadInvoke(Expr* e){
+	fprintf(fpout, "\tgetstatic test/_sc Ljava/util/Scanner;\n");
+
+	if(!strcmp(PrintType(e->type, 0), "int")){
+		fprintf(fpout, "\tinvokevirtual java/util/Scanner/nextInt()I\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "float")){
+		fprintf(fpout, "\tinvokevirtual java/util/Scanner/nextFloat()F\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "double")){
+		fprintf(fpout, "\tinvokevirtual java/util/Scanner/nextDouble()D\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "bool")){
+		fprintf(fpout, "\tinvokevirtual java/util/Scanner/nextBoolean()Z\n");
+	}
+
+	GenVarStore(e);
 }

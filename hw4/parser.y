@@ -90,7 +90,7 @@ FILE *fpout;
 %type <exprlist> expression_list
 %type <expr> function_invocation
 %type <exprlist> initial_array
-
+%type <expr> print
 /*      types       */
 %union  {
   int num;
@@ -206,10 +206,16 @@ simple : simple_content SEMICOLON
 
 
 simple_content : variable_reference ASSIGN expression     {CheckType($1, $3); GenVarStore($1);}
-               | PRINT expression                         {CheckRW($2);}
-               | READ variable_reference                  {CheckRW($2);}
+               | print expression                         {CheckRW($2); GenPrintInvoke($2);}
+               | read variable_reference                  {CheckRW($2); GenReadInvoke($2);}
                | expression
                ;
+
+print : PRINT { GenPrintInitialization(); }
+      ;
+
+read : READ
+     ;
 
 expression : expression OR expression                {$$ = LogicOp($1, $3, $2); GenLogicOp($2); }        //both sides are booleans => bool
            | expression AND expression               {$$ = LogicOp($1, $3, $2); GenLogicOp($2);}

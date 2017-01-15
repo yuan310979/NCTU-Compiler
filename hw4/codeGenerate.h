@@ -20,3 +20,6 @@ void GenNegativeOp(Expr*);
 void GenRelOp(Expr*, Expr*, const char*);
 void GenVarStore(Expr*);
 void GenInitialStore(const char*, Type*);
+void GenPrintInitialization();
+void GenPrintInvoke(Expr*);
+void GenReadInvoke(Expr*);
