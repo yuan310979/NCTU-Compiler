@@ -333,7 +333,7 @@ void GenFuncInitialization(const char* name){
 		fprintf(fpout, "Z\n");
 	}
 	else if(!strcmp(PrintType(e->entry->type,0), "void")){
-		fprintf(fpout, "\n");
+		fprintf(fpout, "V\n");
 	}
 
 	fprintf(fpout, ".limit stack 100\n");
@@ -346,6 +346,25 @@ void GenFuncInitialization(const char* name){
 	fprintf(fpout, "\tputstatic test/_sc Ljava/util/Scanner;\n");
 }
 
-void GenFuncEnd(){
+void GenFuncEnd(const char* return_type){
+	if(!strcmp(return_type, "void"))
+		fprintf(fpout, "\treturn\n");
 	fprintf(fpout, ".end method\n");
+}
+
+void GenReturn(Expr* e){
+	if(!strcmp(e->kind, "error"))
+		return;
+	if(!strcmp(PrintType(e->type, 0), "int")){
+		fprintf(fpout, "\tireturn\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "float")){
+		fprintf(fpout, "\tfreturn\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "double")){
+		fprintf(fpout, "\tdreturn\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "bool")){
+		fprintf(fpout, "\tireturn\n");
+	}
 }

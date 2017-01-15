@@ -24,4 +24,5 @@ void GenPrintInitialization();
 void GenPrintInvoke(Expr*);
 void GenReadInvoke(Expr*);
 void GenFuncInitialization(const char*);
-void GenFuncEnd();
+void GenFuncEnd(const char*);
+void GenReturn(Expr*);

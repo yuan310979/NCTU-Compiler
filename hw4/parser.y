@@ -156,7 +156,7 @@ funct_defi : type ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES LEFT_BRACE
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
               is_entryfunc = 0;
-              GenFuncEnd();
+              GenFuncEnd($1);
             }
            | procedure_definition
            ;
@@ -185,7 +185,7 @@ procedure_definition : VOID ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES 
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
               is_entryfunc = 0;
-              GenFuncEnd();
+              GenFuncEnd("void");
             }
             ;
 
@@ -301,7 +301,7 @@ for : FOR LEFT_PARENTHESES initial_expression SEMICOLON control_expression SEMIC
       }
     ;
 
-jump : RETURN expression SEMICOLON        {CheckFuncReturn(return_buf, $2); has_return = 1;}
+jump : RETURN expression SEMICOLON        {CheckFuncReturn(return_buf, $2); has_return = 1; GenReturn($2);}
      | BREAK SEMICOLON                    {CheckForWhile(is_forwhile);}
      | CONTINUE SEMICOLON                 {CheckForWhile(is_forwhile);}
      ;
