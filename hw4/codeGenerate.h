@@ -26,3 +26,4 @@ void GenReadInvoke(Expr*);
 void GenFuncInitialization(const char*);
 void GenFuncEnd(const char*);
 void GenReturn(Expr*);
+void GenFuncInvoke(const char*);

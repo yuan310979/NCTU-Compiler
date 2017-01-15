@@ -368,3 +368,43 @@ void GenReturn(Expr* e){
 		fprintf(fpout, "\tireturn\n");
 	}
 }
+
+void GenFuncInvoke(const char* name){
+	TableEntry* t = FindEntryInGlobal(symbol_table, name);
+	if(t == NULL){
+		return;
+	}
+	fprintf(fpout, "\tinvokestatic test/%s(", t->name);
+	if(t->attribute->type_list != NULL){
+		for(int i = 0; i < t->attribute->type_list->current_size; i++){
+			if(!strcmp(PrintType(t->attribute->type_list->types[i], 0), "int")){
+				fprintf(fpout, "I");
+			}
+			else if(!strcmp(PrintType(t->attribute->type_list->types[i], 0), "float")){
+				fprintf(fpout, "F");
+			}
+			else if(!strcmp(PrintType(t->attribute->type_list->types[i], 0), "double")){
+				fprintf(fpout, "D");
+			}
+			else if(!strcmp(PrintType(t->attribute->type_list->types[i], 0), "bool")){
+				fprintf(fpout, "Z");
+			}
+		}
+	}
+	fprintf(fpout, ")");
+	if(!strcmp(PrintType(t->type,0), "int")){
+		fprintf(fpout, "I\n");
+	}
+	else if(!strcmp(PrintType(t->type,0), "float")){
+		fprintf(fpout, "F\n");
+	}
+	else if(!strcmp(PrintType(t->type,0), "double")){
+		fprintf(fpout, "D\n");
+	}
+	else if(!strcmp(PrintType(t->type,0), "bool")){
+		fprintf(fpout, "Z\n");
+	}
+	else if(!strcmp(PrintType(t->type,0), "void")){
+		fprintf(fpout, "V\n");
+	}
+}

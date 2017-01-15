@@ -242,7 +242,7 @@ expression : expression OR expression                {$$ = LogicOp($1, $3, $2); 
            | function_invocation              { $$ = $1; }
            ;
 
-function_invocation : ID LEFT_PARENTHESES expression_list RIGHT_PARENTHESES       {$$ = FunctionCall($1, $3, symbol_table);}
+function_invocation : ID LEFT_PARENTHESES expression_list RIGHT_PARENTHESES       {$$ = FunctionCall($1, $3, symbol_table); GenFuncInvoke($1);}
                     ;
 
 expression_list : nonEmptyExpressionList  { $$ = $1; }

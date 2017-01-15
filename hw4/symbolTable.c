@@ -877,21 +877,21 @@ Expr* FunctionCall(const char* name, ExprList* l, SymbolTable* st){
 				if(strstr(PrintType(e->entry->attribute->type_list->types[i], 0), "float") != NULL && strstr(PrintType(l->exprs[i]->type, l->exprs[i]->current_dimension),"int")!=NULL){
 					char* t1 = strstr(PrintType(e->entry->attribute->type_list->types[i], 0), "float");
 					char* t2 = strstr(PrintType(l->exprs[i]->type, l->exprs[i]->current_dimension),"int");
-					printf("%s %s\n", t1+5,t2+3);
+					//printf("%s %s\n", t1+5,t2+3);
 					if(!strcmp(t1+5,t2+3))
 						continue;
 				}
 				else if(strstr(PrintType(e->entry->attribute->type_list->types[i], 0), "double") != NULL && strstr(PrintType(l->exprs[i]->type, l->exprs[i]->current_dimension),"int")!=NULL){
 					char* t1 = strstr(PrintType(e->entry->attribute->type_list->types[i], 0), "double");
 					char* t2 = strstr(PrintType(l->exprs[i]->type, l->exprs[i]->current_dimension),"int");
-					printf("%s %s\n", t1+6,t2+3);
+					//printf("%s %s\n", t1+6,t2+3);
 					if(!strcmp(t1+6,t2+3))
 						continue;
 				}
 				else if(strstr(PrintType(e->entry->attribute->type_list->types[i], 0), "double") != NULL && strstr(PrintType(l->exprs[i]->type, l->exprs[i]->current_dimension),"float")!=NULL){
 					char* t1 = strstr(PrintType(e->entry->attribute->type_list->types[i], 0), "double");
 					char* t2 = strstr(PrintType(l->exprs[i]->type, l->exprs[i]->current_dimension),"float");
-					printf("%s %s\n", t1+6,t2+5);
+					//printf("%s %s\n", t1+6,t2+5);
 					if(!strcmp(t1+6,t2+5))
 						continue;
 				}
