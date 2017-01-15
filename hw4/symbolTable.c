@@ -855,11 +855,11 @@ Expr* FunctionCall(const char* name, ExprList* l, SymbolTable* st){
 	else{
 		e->type = e->entry->type;
 	}
-	if(e->entry->has_def != 1){
+	/*if(e->entry->has_def != 1){
 		printf("Error at Line#%d: function %s has no definition\n", linenum, name);
 		error = 1;
 		return e;
-	}
+	}*/
 	if(l == NULL){
 		e->para = NULL;
 	}

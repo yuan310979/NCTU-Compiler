@@ -9,7 +9,7 @@ void Initialization(){
 	true_index = 0;
 	false_index = 0;
 	if_index = 0;
-	fprintf(fpout, ".class public test\n");
+	fprintf(fpout, ".class public output\n");
 	fprintf(fpout, ".super java/lang/Object\n");
 	fprintf(fpout, ".field public static _sc Ljava/util/Scanner;\n");
 }
@@ -50,25 +50,28 @@ void GenVarRef(Expr* e){
 	else if(!strcmp(e->entry->kind, "variable") || !strcmp(e->entry->kind, "parameter")){
 		if(e->entry->level == 0){
   			if(!strcmp(PrintType(e->entry->type,0), "int")){
-  				fprintf(fpout, "\tgetstatic test/%s I\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic output/%s I\n", e->entry->name);
   			}
   			else if(!strcmp(PrintType(e->entry->type,0), "float")){
-  				fprintf(fpout, "\tgetstatic test/%s F\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic output/%s F\n", e->entry->name);
   			}
   			else if(!strcmp(PrintType(e->entry->type,0), "double")){
-  				fprintf(fpout, "\tgetstatic test/%s D\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic output/%s D\n", e->entry->name);
   			}
   			else if(!strcmp(PrintType(e->entry->type,0), "bool")){
-  				fprintf(fpout, "\tgetstatic test/%s Z\n", e->entry->name);
+  				fprintf(fpout, "\tgetstatic output/%s Z\n", e->entry->name);
   			}
 		}
 		else{
-			fprintf(fpout, "\tiload %d\n", e->entry->local_num);
+			if(!strcmp(PrintType(e->entry->type,0), "int") || !strcmp(PrintType(e->entry->type,0), "bool"))
+				fprintf(fpout, "\tiload %d\n", e->entry->local_num);
+			else if(!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e->entry->type,0), "double"))
+				fprintf(fpout, "\tfload %d\n", e->entry->local_num);
 		}
 	}
 	else if(!strcmp(e->entry->kind, "constant")){
 		if(!strcmp(PrintType(e->entry->type,0), "int")){
-			fprintf(fpout, "\tsipush %d\n", e->entry->attribute->val->ival);
+			fprintf(fpout, "\tldc %d\n", e->entry->attribute->val->ival);
 		}
 		else if(!strcmp(PrintType(e->entry->type,0), "float")){
 			fprintf(fpout, "\tldc %f\n", e->entry->attribute->val->dval);
@@ -94,7 +97,7 @@ void GenLiteralConstant(Value* v){
 	}
 	else{
 		if(!strcmp(v->type->name, "int")){
-			fprintf(fpout, "\tsipush %d\n", v->ival);
+			fprintf(fpout, "\tldc %d\n", v->ival);
 		}
 		else if(!strcmp(v->type->name, "float")){
 			fprintf(fpout, "\tldc %f\n", v->dval);
@@ -223,20 +226,25 @@ void GenVarStore(Expr* e){
 		return;
 	}
 	if(e->entry->level != 0){
-		fprintf(fpout, "\tistore %d\n", e->entry->local_num);
+		if(!strcmp(PrintType(e->entry->type,0), "int") || !strcmp(PrintType(e->entry->type,0), "bool")){
+			fprintf(fpout, "\tistore %d\n", e->entry->local_num);
+		}
+		else if(!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e->entry->type,0), "double")){
+			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
+		}
 	}
 	else{
 		if(!strcmp(PrintType(e->type, e->current_dimension), "int")){
-			fprintf(fpout, "\tputstatic test/%s I\n", e->entry->name);
+			fprintf(fpout, "\tputstatic output/%s I\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "float")){
-			fprintf(fpout, "\tputstatic test/%s F\n", e->entry->name);
+			fprintf(fpout, "\tputstatic output/%s F\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "double")){
-			fprintf(fpout, "\tputstatic test/%s D\n", e->entry->name);
+			fprintf(fpout, "\tputstatic output/%s D\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "bool")){
-			fprintf(fpout, "\tputstatic test/%s Z\n", e->entry->name);
+			fprintf(fpout, "\tputstatic output/%s Z\n", e->entry->name);
 		}
 	}
 }
@@ -250,16 +258,16 @@ void GenInitialStore(const char* name, Type* t){
 	}
 	else{
 		if(!strcmp(PrintType(t,0), "int")){
-			fprintf(fpout, "\tputstatic test/%s I\n", name);
+			fprintf(fpout, "\tputstatic output/%s I\n", name);
 		}
 		else if(!strcmp(PrintType(t,0), "float")){
-			fprintf(fpout, "\tputstatic test/%s F\n", name);
+			fprintf(fpout, "\tputstatic output/%s F\n", name);
 		}
 		else if(!strcmp(PrintType(t,0), "double")){
-			fprintf(fpout, "\tputstatic test/%s D\n", name);
+			fprintf(fpout, "\tputstatic output/%s D\n", name);
 		}
 		else if(!strcmp(PrintType(t,0), "bool")){
-			fprintf(fpout, "\tputstatic test/%s Z\n", name);
+			fprintf(fpout, "\tputstatic output/%s Z\n", name);
 		}
 		return;
 	}
@@ -283,7 +291,7 @@ void GenPrintInvoke(Expr* e){
 }
 
 void GenReadInvoke(Expr* e){
-	fprintf(fpout, "\tgetstatic test/_sc Ljava/util/Scanner;\n");
+	fprintf(fpout, "\tgetstatic output/_sc Ljava/util/Scanner;\n");
 
 	if(!strcmp(PrintType(e->type, 0), "int")){
 		fprintf(fpout, "\tinvokevirtual java/util/Scanner/nextInt()I\n");
@@ -320,8 +328,14 @@ void GenFuncInitialization(const char* name){
 			}
 		}
 	}
+	else if(is_entryfunc){
+		fprintf(fpout, "[Ljava/lang/String;");
+	}
 	fprintf(fpout, ")");
-	if(!strcmp(PrintType(e->entry->type,0), "int")){
+	if(is_entryfunc){
+		fprintf(fpout, "V\n");
+	}
+	else if(!strcmp(PrintType(e->entry->type,0), "int")){
 		fprintf(fpout, "I\n");
 	}
 	else if(!strcmp(PrintType(e->entry->type,0), "float")){
@@ -344,7 +358,7 @@ void GenFuncInitialization(const char* name){
 	fprintf(fpout, "\tdup\n");
 	fprintf(fpout, "\tgetstatic java/lang/System/in Ljava/io/InputStream;\n");
 	fprintf(fpout, "\tinvokespecial java/util/Scanner/<init>(Ljava/io/InputStream;)V\n");
-	fprintf(fpout, "\tputstatic test/_sc Ljava/util/Scanner;\n");
+	fprintf(fpout, "\tputstatic output/_sc Ljava/util/Scanner;\n");
 }
 
 void GenFuncEnd(const char* return_type){
@@ -356,7 +370,10 @@ void GenFuncEnd(const char* return_type){
 void GenReturn(Expr* e){
 	if(!strcmp(e->kind, "error"))
 		return;
-	if(!strcmp(PrintType(e->type, 0), "int")){
+	if(is_entryfunc){
+		fprintf(fpout, "\treturn\n");
+	}
+	else if(!strcmp(PrintType(e->type, 0), "int")){
 		fprintf(fpout, "\tireturn\n");
 	}
 	else if(!strcmp(PrintType(e->type, 0), "float")){
@@ -375,7 +392,7 @@ void GenFuncInvoke(const char* name){
 	if(t == NULL){
 		return;
 	}
-	fprintf(fpout, "\tinvokestatic test/%s(", t->name);
+	fprintf(fpout, "\tinvokestatic output/%s(", t->name);
 	if(t->attribute->type_list != NULL){
 		for(int i = 0; i < t->attribute->type_list->current_size; i++){
 			if(!strcmp(PrintType(t->attribute->type_list->types[i], 0), "int")){
@@ -411,33 +428,65 @@ void GenFuncInvoke(const char* name){
 }
 
 void GenIfStatement(){
-	fprintf(fpout, "\tifeq Lelse_%d\n", if_index);
+	fprintf(fpout, "\tifeq Lelse_%d\n", fwbuf->value[fwbuf->current_size-1]);
 }
 
-void GenIfElse(){
-	fprintf(fpout, "\tgoto Lexit_%d\n", if_index);
-	fprintf(fpout, "Lelse_%d:\n", if_index);
+void GenIfElse(int index){
+	fprintf(fpout, "\tgoto Lexit_%d\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "Lelse_%d:\n", fwbuf->value[fwbuf->current_size-1]);
 }
 
 void GenIfEnd(){
-	fprintf(fpout, "Lexit_%d:\n", if_index++);
+	fprintf(fpout, "Lexit_%d:\n", fwbuf->value[fwbuf->current_size-1]);
 }
 
 void GenIfWithoutElse(){
-	fprintf(fpout, "\tgoto Lexit_%d\n", if_index);
-	fprintf(fpout, "Lelse_%d:\n", if_index);
-	fprintf(fpout, "Lexit_%d:\n", if_index++);
+	fprintf(fpout, "\tgoto Lexit_%d\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "Lelse_%d:\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "Lexit_%d:\n", fwbuf->value[fwbuf->current_size-1]);
 }
 
 void GenControlStart(){
-	fprintf(fpout, "Lbegin_%d:\n", if_index);
+	fprintf(fpout, "Lbegin_%d:\n", fwbuf->value[fwbuf->current_size-1]);
 }
 
 void GenControlFlag(){
-	fprintf(fpout, "\tifeq Lexit_%d\n", if_index);
+	fprintf(fpout, "\tifeq Lexit_%d\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "\tgoto Lexec_%d\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "Lincre_%d:\n", fwbuf->value[fwbuf->current_size-1]);
+}
+
+void GenWhileControlFlag(){
+	fprintf(fpout, "\tifeq Lexit_%d\n", fwbuf->value[fwbuf->current_size-1]);
+}
+
+void GenWhileEnd(){
+	fprintf(fpout, "\tgoto Lbegin_%d\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "Lexit_%d:\n", fwbuf->value[fwbuf->current_size-1]);
 }
 
 void GenForEnd(){
-	fprintf(fpout, "\tgoto Lbegin_%d\n", if_index);
-	fprintf(fpout, "Lexit_%d:\n", if_index++);
+	fprintf(fpout, "\tgoto Lincre_%d\n", fwbuf->value[fwbuf->current_size-1]);
+	fprintf(fpout, "Lexit_%d:\n", fwbuf->value[fwbuf->current_size-1]);
+}
+
+void GenExecFlag(){
+	fprintf(fpout, "Lexec_%d:\n", fwbuf->value[fwbuf->current_size-1]);
+}
+
+void GenIncreEnd(){
+	fprintf(fpout, "\tgoto Lbegin_%d\n", fwbuf->value[fwbuf->current_size-1]);
+}
+
+// for fwbuf
+void forwhile_buf_initialize(forwhile_buf* buf){
+	buf->current_size = 0;
+}
+
+void push_buf(forwhile_buf* buf, int num){
+	buf->value[buf->current_size++] = num;
+}
+
+void pop_buf(forwhile_buf* buf){
+	buf->current_size--;
 }

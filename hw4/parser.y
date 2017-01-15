@@ -31,8 +31,11 @@ int has_return=0;
 int error = 0;
 int is_forwhile = 0;
 int is_entryfunc = 1;
+int forwhile_index=0;
 
 FILE *fpout;
+
+forwhile_buf* fwbuf;
 
 %}
 
@@ -91,6 +94,7 @@ FILE *fpout;
 %type <expr> function_invocation
 %type <exprlist> initial_array
 %type <expr> print
+%type <num> ifconditional
 /*      types       */
 %union  {
   int num;
@@ -155,8 +159,8 @@ funct_defi : type ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES LEFT_BRACE
               PrintSymbolTable(symbol_table); 
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
-              is_entryfunc = 0;
               GenFuncEnd($1);
+              is_entryfunc = 0;
             }
            | procedure_definition
            ;
@@ -184,8 +188,8 @@ procedure_definition : VOID ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES 
               PrintSymbolTable(symbol_table); 
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
-              is_entryfunc = 0;
               GenFuncEnd("void");
+              is_entryfunc = 0;
             }
             ;
 
@@ -266,11 +270,16 @@ arr_reference_square : arr_reference_square square_expression   { current_dim++;
 square_expression : LEFT_SQUARE expression RIGHT_SQUARE
                   ;
 
-conditional : ifconditional compound ELSE {GenIfElse();} compound {GenIfEnd();}
-            | ifconditional compound {GenIfWithoutElse();}
+conditional : ifconditional compound ELSE {GenIfElse();} compound {GenIfEnd();pop_buf(fwbuf);}
+            | ifconditional compound {GenIfWithoutElse();pop_buf(fwbuf);}
             ;
 
-ifconditional : IF LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES    {GenIfStatement();}
+ifconditional : IF LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES    
+              {  
+                push_buf(fwbuf, forwhile_index);
+                forwhile_index++;
+                GenIfStatement();
+              }
               ;
 
 boolean_expression : expression     {CheckBool($1);}
@@ -278,38 +287,51 @@ boolean_expression : expression     {CheckBool($1);}
 
 while : WHILE LEFT_PARENTHESES
         {
+          push_buf(fwbuf, forwhile_index);
+          forwhile_index++;
           GenControlStart();
         }
         boolean_expression RIGHT_PARENTHESES
         {
           is_forwhile = 1;
-          GenControlFlag();
+          GenWhileControlFlag();
         }
         compound
         {
           is_forwhile = 0;
-          GenForEnd();
+          GenWhileEnd();
+          pop_buf(fwbuf);
         }
       | DO
         {
+          push_buf(fwbuf, forwhile_index);
+          forwhile_index++;
           GenControlStart();
           is_forwhile = 1;
         } 
         compound WHILE LEFT_PARENTHESES boolean_expression RIGHT_PARENTHESES SEMICOLON
         {
           is_forwhile = 0;
-          GenControlFlag();
-          GenForEnd();
+          GenWhileControlFlag();
+          GenWhileEnd();
+          pop_buf(fwbuf);
         }
       ;
 
-for : FOR LEFT_PARENTHESES initial_expression SEMICOLON control_expression SEMICOLON increment_expression RIGHT_PARENTHESES
+for : FOR 
+      {
+        push_buf(fwbuf, forwhile_index);
+        forwhile_index++;
+      }
+      LEFT_PARENTHESES initial_expression SEMICOLON control_expression SEMICOLON increment_expression RIGHT_PARENTHESES
       {
         is_forwhile = 1;
+        GenExecFlag();
       }
       compound
       {
         GenForEnd();
+        pop_buf(fwbuf);
         is_forwhile = 0;
       }
     ;
@@ -327,8 +349,8 @@ control_expression : variable_reference ASSIGN expression       {CheckBool($3); 
                    | expression                                 {CheckBool($1); GenControlFlag();}
                    ;
 
-increment_expression : variable_reference ASSIGN expression      {GenVarStore($1);}
-                     | expression
+increment_expression : variable_reference ASSIGN expression      {GenVarStore($1); GenIncreEnd();}
+                     | expression_list                           {GenIncreEnd();}
                      ;
 
 compound_content : compound_content const_decl            {has_return = 0;}
@@ -493,6 +515,8 @@ int  main( int argc, char **argv )
 	
 	yyin = fp;
   Initialization();
+  fwbuf = (forwhile_buf*) malloc(sizeof(forwhile_buf));
+  forwhile_buf(buf);
 	yyparse();
 
   if (Opt_Statistic){

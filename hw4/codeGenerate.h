@@ -1,9 +1,22 @@
 #include <stdio.h>
 
+typedef struct forwhile_buf forwhile_buf;
+
 extern FILE* fpout;
 extern SymbolTable* symbol_table;
 extern IdList* tmp_idlist;
 extern int error;
+extern forwhile_buf* fwbuf;
+
+
+
+struct forwhile_buf{
+	int current_size;
+	int value[20];
+};
+void forwhile_buf_initialize(forwhile_buf*);
+void push_buf(forwhile_buf*,int);
+void pop_buf(forwhile_buf*);
 
 int true_index;
 int false_index;
@@ -35,3 +48,6 @@ void GenIfWithoutElse();
 void GenControlStart();
 void GenControlFlag();
 void GenForEnd();
+void GenExecFlag();
+void GenWhileControlFlag();
+void GenWhileEnd();
