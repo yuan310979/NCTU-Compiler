@@ -11,7 +11,7 @@ SymbolTable* BuildSymbolTable(){
 	new->capacity = 4;
 	new->Entries = (TableEntry**) malloc(sizeof(TableEntry*) * 4);
 
-	new->next_local_num = 0;
+	new->next_local_num = 1;
 
 	return new;
 }
@@ -41,7 +41,7 @@ void PrintSymbolTable(SymbolTable* t)
             	printf("%d",ptr->attribute->val->ival);*/
             if(!strcmp(ptr->kind, "constant") || !strcmp(ptr->kind, "function"))
             	PrintAttribute(ptr->attribute);
-            if(t->current_level != 0 && !strcmp(ptr->kind, "variable"))
+            if(t->current_level != 0 && !strcmp(ptr->kind, "variable") || !strcmp(ptr->kind, "parameter"))
             	printf(" %d",ptr->local_num);
             printf("\n");
         }
@@ -57,8 +57,9 @@ void PopTableEntry(SymbolTable* s)
         ptr = s->Entries[i];
         if (ptr->level == s->current_level) {
             free(ptr);
-            if(s->next_local_num > 1 && s->current_level != 0) 	// except for the entry function, other function's local will start at 1
+            if(s->current_level != 0){ 	// except for the entry function, other function's local will start at 0
             	s->next_local_num--;
+       		}
             if (i < (s->current_size) - 1){			//delete and move around(if not the end of the entries)
                 s->Entries[i] = s->Entries[--(s->current_size)];  // move the last one to the free space
                 i--;   								//and check the moved one                                 		
@@ -68,6 +69,9 @@ void PopTableEntry(SymbolTable* s)
                 s->current_size--;
             }
         }
+    }
+    if(is_entryfunc && s->next_local_num == 1){
+    	s->next_local_num = 0;
     }
 }
 
@@ -267,7 +271,8 @@ void InsertTableEntryFromList(SymbolTable* t, IdList* l, const char* kind, Type*
 			error = 1;
 			continue;
     	}
-
+    	/*if(!is_entryfunc && t->next_local_num == 1)
+        	t->next_local_num = 0;*/
     	if(t->current_level != 0){
     		new_entry->local_num = t->next_local_num;
     		t->next_local_num++;
@@ -317,10 +322,16 @@ void InsertTableEntryFromTypeList(SymbolTable* t, IdList* l, const char* kind, T
 		else{
 			tmp_attribute = (Attribute*) malloc(sizeof(Attribute));
 			tmp_attribute->val = l->attributes[i]->val;
-			tmp_attribute->val = l->attributes[i]->val;
+			//tmp_attribute->val = l->attributes[i]->val;
 		}
 
         TableEntry* new_entry = BuildTableEntry(l->ids[i], kind, t->current_level, tmp_type, tmp_attribute);
+        /*if(!is_entryfunc && t->next_local_num == 0)
+        	t->next_local_num = 0;*/
+        if(t->current_level != 0){
+    		new_entry->local_num = t->next_local_num;
+    		t->next_local_num++;
+    	}		
         InsertTableEntry(t, new_entry);
     }
 }
@@ -682,8 +693,9 @@ Attribute* BuildFunctAttribute(TypeList* t){
 
 Attribute* BuildExprAttribute(Expr* e){
 	Attribute* new = (Attribute*) malloc(sizeof(Attribute));
-	if(!strcmp(e->kind, "error"))
+	if(!strcmp(e->kind, "error")){
 		return NULL;
+	}
 	//printf("%s\n", e->type->name);
 	new->val = (Value*) malloc(sizeof(Value));
 	new->val->type = e->type;
@@ -764,6 +776,7 @@ TypeList* AddTypeToList(TypeList* l, Type* t, IdList* idlist){
 }
 
 TypeList* ExtendTypeList(TypeList* dest, TypeList* src){
+	printf("%d %d\n", dest->current_size, src->current_size);
 	if(dest->capacity - dest->current_size < src->current_size){
 		while(dest->capacity - dest->current_size < src->current_size){
 			dest->capacity *= 2;
@@ -806,13 +819,22 @@ TableEntry* FindEntryInGlobal(SymbolTable* st, const char* name)
 
 TableEntry* FindEntryInLocalLoop(SymbolTable* st, const char* name)
 {
+    int max_level = -1;
+    TableEntry* it;
     for (int i = 0; i < st->current_size; i++) {
-        TableEntry* it = st->Entries[i];
-        if (!strcmp(name, it->name) && it->level != 0) {
-            return it;
+        it = st->Entries[i];
+        if (!strcmp(name, it->name) && it->level != 0 && it->level > max_level) {
+            max_level = it->level;
         }
     }
-    return NULL;
+    if(max_level == -1){
+    	return NULL;
+    }
+    else{
+    	//printf("%s:%d\n", it->name, it->level);
+    	return it;
+    }
+    
 }
 
 Expr* FunctionCall(const char* name, ExprList* l, SymbolTable* st){
@@ -954,8 +976,11 @@ ExprList* BuildExprList(ExprList* el, Expr* e){
 Expr* ArithOp(Expr* LHS, Expr* RHS, char op){
 	if (LHS == NULL || RHS == NULL)
         return NULL;
-    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error"))
-        return 0;
+    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error")){
+    	Expr* tmp = (Expr*) malloc(sizeof(Expr));
+    	strcpy(tmp->kind, "error");
+    	return tmp;
+    }
     Expr* tmp = (Expr*) malloc(sizeof(Expr));
     tmp->current_dimension = 0;
     tmp->entry = NULL;
@@ -1008,8 +1033,11 @@ Expr* ArithOp(Expr* LHS, Expr* RHS, char op){
 Expr* ModOp(Expr* LHS, Expr* RHS){
 	if (LHS == NULL || RHS == NULL)
         return NULL;
-    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error"))
-        return 0;
+    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error")){
+    	Expr* tmp = (Expr*) malloc(sizeof(Expr));
+    	strcpy(tmp->kind, "error");
+    	return tmp;
+    }
     Expr* tmp = (Expr*) malloc(sizeof(Expr));
     tmp->current_dimension = 0;
     tmp->entry = NULL;
@@ -1031,8 +1059,11 @@ Expr* LogicOp(Expr* LHS, Expr* RHS, char* op){
 	//printf("%s %s\n",PrintType(LHS->type, LHS->current_dimension), PrintType(RHS->type, RHS->current_dimension));
 	if (LHS == NULL || RHS == NULL)
         return NULL;
-    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error"))
-        return 0;
+    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error")){
+    	Expr* tmp = (Expr*) malloc(sizeof(Expr));
+    	strcpy(tmp->kind, "error");
+    	return tmp;
+    }
     Expr* tmp = (Expr*) malloc(sizeof(Expr));
     tmp->current_dimension = 0;
     tmp->entry = NULL;
@@ -1053,8 +1084,11 @@ Expr* LogicOp(Expr* LHS, Expr* RHS, char* op){
 Expr* NotOp(Expr* RHS){
 	if (RHS == NULL)
         return NULL;
-    if (!strcmp(RHS->kind, "error"))
-        return 0;
+    if (!strcmp(RHS->kind, "error")){
+    	Expr* tmp = (Expr*) malloc(sizeof(Expr));
+    	strcpy(tmp->kind, "error");
+    	return tmp;
+    }
     Expr* tmp = (Expr*) malloc(sizeof(Expr));
     tmp->current_dimension = 0;
     tmp->entry = NULL;
@@ -1075,8 +1109,11 @@ Expr* NotOp(Expr* RHS){
 Expr* RelOp(Expr* LHS, Expr* RHS, char* op){
 	if (LHS == NULL || RHS == NULL)
         return NULL;
-    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error"))
-        return 0;
+    if (!strcmp(LHS->kind, "error") || !strcmp(RHS->kind, "error")){
+    	Expr* tmp = (Expr*) malloc(sizeof(Expr));
+    	strcpy(tmp->kind, "error");
+    	return tmp;
+    }
     Expr* tmp = (Expr*) malloc(sizeof(Expr));
     tmp->current_dimension = 0;
     tmp->entry = NULL;

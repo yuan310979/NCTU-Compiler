@@ -2,6 +2,7 @@ extern int linenum;             /* declared in lex.l */
 extern char *yytext;            /* declared by lex */
 extern int Opt_Symbol;
 extern int error;
+extern int is_entryfunc;
 
 typedef struct SymbolTable SymbolTable;
 typedef struct TableEntry TableEntry;

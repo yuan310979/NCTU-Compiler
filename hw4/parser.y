@@ -23,12 +23,14 @@ TypeList* tmp_typelist;
 ArraySig* tmp_arraysig;
 SymbolTable* symbol_table;
 Type* return_buf;
+Type* globaldecl_buf;
 
 int arraysig_isnew;
 int current_dim;
 int has_return=0;
 int error = 0;
 int is_forwhile = 0;
+int is_entryfunc = 1;
 
 FILE *fpout;
 
@@ -142,7 +144,6 @@ funct_defi : type ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES LEFT_BRACE
                 symbol_table->current_level++;
                 InsertTableEntryFromTypeList(symbol_table, tmp_idlist, "parameter", $4);
               }
-
               ResetIdList(tmp_idlist);
             }
             compound_content RIGHT_BRACE
@@ -153,6 +154,7 @@ funct_defi : type ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES LEFT_BRACE
               PrintSymbolTable(symbol_table); 
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
+              is_entryfunc = 0;
             }
            | procedure_definition
            ;
@@ -179,6 +181,7 @@ procedure_definition : VOID ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES 
               PrintSymbolTable(symbol_table); 
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
+              is_entryfunc = 0;
             }
             ;
 
@@ -202,30 +205,30 @@ simple : simple_content SEMICOLON
        ;
 
 
-simple_content : variable_reference ASSIGN expression     {CheckType($1, $3);}
+simple_content : variable_reference ASSIGN expression     {CheckType($1, $3); GenVarStore($1);}
                | PRINT expression                         {CheckRW($2);}
                | READ variable_reference                  {CheckRW($2);}
                | expression
                ;
 
-expression : expression OR expression                {$$ = LogicOp($1, $3, $2);}        //both sides are booleans => bool
-           | expression AND expression               {$$ = LogicOp($1, $3, $2);}
-           | NOT expression                          {$$ = NotOp($2);}
-           | expression LE expression                {$$ = RelOp($1, $3, $2);}          //both sides are int float double => bool
-           | expression LT expression                {$$ = RelOp($1, $3, $2);}
-           | expression GT expression                {$$ = RelOp($1, $3, $2);}
-           | expression GE expression                {$$ = RelOp($1, $3, $2);}
-           | expression EQ expression                {$$ = RelOp($1, $3, $2);}
-           | expression NE expression                {$$ = RelOp($1, $3, $2);}
-           | expression PLUS expression              {$$ = ArithOp($1, $3, '+');}     //both sides are int float double => int float double
-           | expression MINUS expression             {$$ = ArithOp($1, $3, '-');}
-           | expression MOD expression               {$$ = ModOp($1, $3);}              // both sides are int => int
-           | expression MUL expression               {$$ = ArithOp($1, $3, '*');}
-           | expression DIV expression               {$$ = ArithOp($1, $3, '/');}
-           | MINUS expression %prec MUL              {$$ = NegativeOp($2);}           //should be int float double => int float double
+expression : expression OR expression                {$$ = LogicOp($1, $3, $2); GenLogicOp($2); }        //both sides are booleans => bool
+           | expression AND expression               {$$ = LogicOp($1, $3, $2); GenLogicOp($2);}
+           | NOT expression                          {$$ = NotOp($2); GenNotOp();}
+           | expression LE expression                {$$ = RelOp($1, $3, $2); GenRelOp($1, $3, $2);}          //both sides are int float double => bool
+           | expression LT expression                {$$ = RelOp($1, $3, $2); GenRelOp($1, $3, $2);}
+           | expression GT expression                {$$ = RelOp($1, $3, $2); GenRelOp($1, $3, $2);}
+           | expression GE expression                {$$ = RelOp($1, $3, $2); GenRelOp($1, $3, $2);}
+           | expression EQ expression                {$$ = RelOp($1, $3, $2); GenRelOp($1, $3, $2);}
+           | expression NE expression                {$$ = RelOp($1, $3, $2); GenRelOp($1, $3, $2);}
+           | expression PLUS expression              {$$ = ArithOp($1, $3, '+'); GenArithOp($1, $3, '+'); }     //both sides are int float double => int float double
+           | expression MINUS expression             {$$ = ArithOp($1, $3, '-'); GenArithOp($1, $3, '-');}
+           | expression MOD expression               {$$ = ModOp($1, $3); GenModOp();}              // both sides are int => int
+           | expression MUL expression               {$$ = ArithOp($1, $3, '*'); GenArithOp($1, $3, '*');}
+           | expression DIV expression               {$$ = ArithOp($1, $3, '/'); GenArithOp($1, $3, '/');}
+           | MINUS expression %prec MUL              {$$ = NegativeOp($2); GenNegativeOp($2);}           //should be int float double => int float double
            | LEFT_PARENTHESES expression RIGHT_PARENTHESES %prec MUL    { $$ = $2; }
-           | literal_constant                 { $$ = ConstExpr($1); }
-           | variable_reference               { $$ = $1; }
+           | literal_constant                 { $$ = ConstExpr($1); GenLiteralConstant($1);}
+           | variable_reference               { $$ = $1; GenVarRef($1); }
            | function_invocation              { $$ = $1; }
            ;
 
@@ -351,15 +354,16 @@ literal_constant : INT_LIT        {$$=BuildValue("int",yytext);}
 
 var_decl : type identifier_list SEMICOLON {
                                               InsertTableEntryFromList(symbol_table, tmp_idlist, "variable", $1);
+                                              GenGlobalVarFromList(tmp_idlist);
                                               ResetIdList(tmp_idlist);
                                           }
                                           ;
 
-type : INT        {$$ = BuildType("int");}
-     | DOUBLE     {$$ = BuildType("double");}
-     | FLOAT      {$$ = BuildType("float");}
-     | STRING     {$$ = BuildType("string");}
-     | BOOL       {$$ = BuildType("bool");}
+type : INT        {$$ = BuildType("int"); globaldecl_buf=$$;}
+     | DOUBLE     {$$ = BuildType("double"); globaldecl_buf=$$;}
+     | FLOAT      {$$ = BuildType("float"); globaldecl_buf=$$;}
+     | STRING     {$$ = BuildType("string"); globaldecl_buf=$$;}
+     | BOOL       {$$ = BuildType("bool"); globaldecl_buf=$$;}
      ; 
 
 identifier_list : identifier_list COMMA identifier
@@ -373,7 +377,7 @@ identifier : identifier_no_initial
 identifier_no_initial : ID            {InsertIdList(tmp_idlist, $1, NULL, NULL);}
                       | ID array      {InsertIdList(tmp_idlist, $1, tmp_arraysig, NULL); tmp_arraysig = BuildTmpArraySig(); arraysig_isnew = 1;}
                       ;
-identifier_with_initial : ID ASSIGN expression            {InsertIdList(tmp_idlist, $1, NULL, BuildExprAttribute($3));}
+identifier_with_initial : ID ASSIGN expression            {InsertIdList(tmp_idlist, $1, NULL, BuildExprAttribute($3)); GenInitialStore($1,globaldecl_buf);}
                         | ID array ASSIGN initial_array   {InsertIdList(tmp_idlist, $1, tmp_arraysig, BuildExprListAttribute($4));  tmp_arraysig = BuildTmpArraySig(); arraysig_isnew = 1;}
                         ;
 
@@ -414,6 +418,7 @@ nonEmptyArgumentList : nonEmptyArgumentList COMMA argument    {$$ = ExtendTypeLi
 argument : type identifier_no_initial
           {
             $$ = AddTypeToList(NULL, $1, tmp_idlist);
+            //printf("%d\n", tmp_idlist->current_size);
             //ResetIdList(tmp_idlist);
           }
          ;
