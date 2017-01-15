@@ -299,3 +299,53 @@ void GenReadInvoke(Expr* e){
 
 	GenVarStore(e);
 }
+
+void GenFuncInitialization(const char* name){
+	Expr* e = FindVarRef(symbol_table, name);
+	fprintf(fpout, ".method public static %s(", name);
+	if(e->entry->attribute->type_list != NULL){
+		for(int i = 0; i < e->entry->attribute->type_list->current_size; i++){
+			if(!strcmp(PrintType(e->entry->attribute->type_list->types[i], 0), "int")){
+				fprintf(fpout, "I");
+			}
+			else if(!strcmp(PrintType(e->entry->attribute->type_list->types[i], 0), "float")){
+				fprintf(fpout, "F");
+			}
+			else if(!strcmp(PrintType(e->entry->attribute->type_list->types[i], 0), "double")){
+				fprintf(fpout, "D");
+			}
+			else if(!strcmp(PrintType(e->entry->attribute->type_list->types[i], 0), "bool")){
+				fprintf(fpout, "Z");
+			}
+		}
+	}
+	fprintf(fpout, ")");
+	if(!strcmp(PrintType(e->entry->type,0), "int")){
+		fprintf(fpout, "I\n");
+	}
+	else if(!strcmp(PrintType(e->entry->type,0), "float")){
+		fprintf(fpout, "F\n");
+	}
+	else if(!strcmp(PrintType(e->entry->type,0), "double")){
+		fprintf(fpout, "D\n");
+	}
+	else if(!strcmp(PrintType(e->entry->type,0), "bool")){
+		fprintf(fpout, "Z\n");
+	}
+	else if(!strcmp(PrintType(e->entry->type,0), "void")){
+		fprintf(fpout, "\n");
+	}
+
+	fprintf(fpout, ".limit stack 100\n");
+	fprintf(fpout, ".limit locals 100\n");
+
+	fprintf(fpout, "\tnew java/util/Scanner\n");
+	fprintf(fpout, "\tdup\n");
+	fprintf(fpout, "\tgetstatic java/lang/System/in Ljava/io/InputStream;\n");
+	fprintf(fpout, "\tinvokespecial java/util/Scanner/<init>(Ljava/io/InputStream;)V\n");
+	fprintf(fpout, "\tputstatic test/_sc Ljava/util/Scanner;\n");
+}
+
+void GenFuncEnd(){
+	fprintf(fpout, ".end method\n");
+}

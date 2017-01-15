@@ -144,6 +144,7 @@ funct_defi : type ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES LEFT_BRACE
                 symbol_table->current_level++;
                 InsertTableEntryFromTypeList(symbol_table, tmp_idlist, "parameter", $4);
               }
+              GenFuncInitialization($2);
               ResetIdList(tmp_idlist);
             }
             compound_content RIGHT_BRACE
@@ -155,6 +156,7 @@ funct_defi : type ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES LEFT_BRACE
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
               is_entryfunc = 0;
+              GenFuncEnd();
             }
            | procedure_definition
            ;
@@ -173,6 +175,7 @@ procedure_definition : VOID ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES 
                 symbol_table->current_level++; 
                 InsertTableEntryFromTypeList(symbol_table, tmp_idlist, "parameter", $4);
               }
+              GenFuncInitialization($2);
               ResetIdList(tmp_idlist);
             }
             compound_content RIGHT_BRACE
@@ -182,6 +185,7 @@ procedure_definition : VOID ID LEFT_PARENTHESES argument_list RIGHT_PARENTHESES 
               PopTableEntry(symbol_table);
               symbol_table->current_level--;
               is_entryfunc = 0;
+              GenFuncEnd();
             }
             ;
 
