@@ -1,7 +1,7 @@
-all: parser
+all: compiler
 
-parser: lex.yy.c y.tab.c symbolTable.c codeGenerate.c
-	gcc -std=c11 -lm -o parser lex.yy.c y.tab.c symbolTable.c codeGenerate.c -ly -lfl
+compiler: lex.yy.c y.tab.c symbolTable.c codeGenerate.c
+	gcc -std=c11 -lm -o compiler lex.yy.c y.tab.c symbolTable.c codeGenerate.c -ly -lfl
 y.tab.c: parser.y
 	yacc -d -v parser.y
 lex.yy.c: new.l
