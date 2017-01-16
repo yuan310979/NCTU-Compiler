@@ -1,0 +1,50 @@
+#pragma source off
+#pragma token off
+#pragma statistic off
+
+//void main(){}
+
+//float aa;
+
+const int a = 10;
+//const bool b = false;
+//const string s = "string";
+//const float r = 1.23;
+
+//int a1 = a;
+//void iamvoid();
+int add(int a, int b){return a+b;}
+//bool foo(int ffff, bool a, float df){return df;}
+
+void main()
+{
+//iamvoid();
+//a1 = add(a, r);
+//par = 3;
+//aa = a;
+float a1;
+//float a1 = -(10+a%9)*-r+(-8);
+//double d1 = a * 2.9998* 2e3;
+//bool b1 = false || b && b;
+//b1 = true && b1;
+//print "string";
+//print a1;
+//print b;
+//print r;
+//read aa;
+//read a1;
+//read d1;
+//read b1;
+//a1 = 5;
+float f1 = 1.23;
+
+int i = 1;
+do{f1=f1+1; i=i+1;}while(i<10);
+//while(i<10){f1=f1+1; i=i+1;}
+
+//for(i = 2; i<4; i=i+1){f1=f1+1;}
+a1 = a+1;
+if(f1>8){  a1 = 1;} else{f1 = 100;}
+a1 = a+1;
+//while(f1>8.33){}
+}

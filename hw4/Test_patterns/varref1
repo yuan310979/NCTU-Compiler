@@ -1,0 +1,26 @@
+#pragma source off
+#pragma token off
+#pragma statistic off
+
+int i1;
+float f2;
+double d3;
+
+int main(){
+  int a;
+  {
+    int a;
+    {
+      int a;
+      {
+         a = a + a + 1;
+      }
+    }
+  }
+}
+
+int foo(int a, float ab){
+  i1 = i1+2;
+  int foo1;
+  foo1 = d3 + f2 * foo1;
+}

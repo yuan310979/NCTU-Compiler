@@ -1,0 +1,19 @@
+#pragma statistic off
+#pragma token off
+#pragma source off
+
+int a;
+float b;
+double c;
+string r;
+bool bb;
+int a[2][3];
+
+int main()
+{
+  int a;
+  float b;
+  double c;
+}
+
+bool bbbbbbb;

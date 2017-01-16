@@ -1,0 +1,37 @@
+1:#pragma symbol on
+
+2:#pragma token off
+
+=======================================================================================
+Name                             Kind       Level       Type               Attribute               
+---------------------------------------------------------------------------------------
+How                              variable   1(local)    int                
+I                                variable   1(local)    int                
+learned                          variable   1(local)    int[1][500][5]     
+to                               variable   1(local)    double             
+stop                             variable   1(local)    double[2][20]      
+worrying                         variable   1(local)    float[1][2]        
+and                              variable   1(local)    float[3]           
+love                             variable   1(local)    bool               
+the                              variable   1(local)    bool[2][95]        
+bomb                             variable   1(local)    string             
+year1964                         variable   1(local)    string             
+movie                            variable   1(local)    string[8]          
+======================================================================================
+=======================================================================================
+Name                             Kind       Level       Type               Attribute               
+---------------------------------------------------------------------------------------
+The                              constant   0(global)   int                -1
+Lord                             constant   0(global)   int                20
+of                               constant   0(global)   bool               true
+rings                            constant   0(global)   bool               false
+tThe                             constant   0(global)   string             compiler
+two                              constant   0(global)   string             nctu
+towers                           constant   0(global)   float              2.500000
+year2002                         constant   0(global)   double             0.025000
+main                             function   0(global)   void               
+======================================================================================
+
+|-------------------------------------------|
+| There is no syntactic and semantic error! |
+|-------------------------------------------|

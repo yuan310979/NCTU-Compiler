@@ -1,0 +1,11 @@
+1:#pragma symbol off
+
+2:#pragma token off
+
+########## Error at Line#6: const type different!! ##########
+########## Error at Line#12: void function cannot be returned ##########
+########## Error at Line#15: too few arguments to function 'foo' ##########
+
+|--------------------------------|
+|  There is no syntactic error!  |
+|--------------------------------|
