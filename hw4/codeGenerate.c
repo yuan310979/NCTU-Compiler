@@ -125,7 +125,18 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 			if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
 		    	fprintf(fpout, "\tiadd\n");
 		    }
-		    else{
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfadd\n");
+		    }
+		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
+		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfadd\n");
+		    }
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
+		    		(!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){
 		    	fprintf(fpout, "\tfadd\n");
 		    }
 			break;
@@ -133,7 +144,18 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 			if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
 		    	fprintf(fpout, "\tisub\n");
 		    }
-		    else{
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfsub\n");
+		    }
+		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
+		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfsub\n");
+		    }
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
+		    		(!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){
 		    	fprintf(fpout, "\tfsub\n");
 		    }
 			break;
@@ -141,7 +163,18 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 			if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
 		    	fprintf(fpout, "\timul\n");
 		    }
-		    else{
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfmul\n");
+		    }
+		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
+		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfmul\n");
+		    }
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
+		    		(!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){
 		    	fprintf(fpout, "\tfmul\n");
 		    }
 			break;
@@ -149,7 +182,18 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 			if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
 		    	fprintf(fpout, "\tidiv\n");
 		    }
-		    else{
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && !strcmp(PrintType(RHS->type, RHS->current_dimension), "int")){
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfdiv\n");
+		    }
+		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
+		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\ti2f\n");
+		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfdiv\n");
+		    }
+		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
+		    		(!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){
 		    	fprintf(fpout, "\tfdiv\n");
 		    }
 			break;
