@@ -370,6 +370,9 @@ void GenPrintInitialization(){
 }
 
 void GenPrintInvoke(Expr* e){
+	if(!strcmp(e->kind, "error")){
+		return;
+	}
 	if(!strcmp(PrintType(e->type,0), "int"))
 		fprintf(fpout, "\tinvokevirtual java/io/PrintStream/print(I)V\n");
 	else if(!strcmp(PrintType(e->type,0), "float"))
