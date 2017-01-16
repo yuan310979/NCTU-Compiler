@@ -213,7 +213,7 @@ simple : simple_content SEMICOLON
        ;
 
 
-simple_content : variable_reference ASSIGN expression     {CheckType($1, $3); GenVarStore($1);}
+simple_content : variable_reference ASSIGN expression     {CheckType($1, $3); GenVarStore($1, $3);}
                | print expression                         {CheckRW($2); GenPrintInvoke($2);}
                | read variable_reference                  {CheckRW($2); GenReadInvoke($2);}
                | expression
@@ -341,15 +341,15 @@ jump : RETURN expression SEMICOLON        {CheckFuncReturn(return_buf, $2); has_
      | CONTINUE SEMICOLON                 {CheckForWhile(is_forwhile);}
      ;
 
-initial_expression : variable_reference ASSIGN expression       {GenVarStore($1);  GenControlStart();}
+initial_expression : variable_reference ASSIGN expression       {GenVarStore($1,$3);  GenControlStart();}
                    | expression                                 {GenControlStart();}
                    ;
 
-control_expression : variable_reference ASSIGN expression       {CheckBool($3); GenVarStore($1); GenControlFlag();}
+control_expression : variable_reference ASSIGN expression       {CheckBool($3); GenVarStore($1,$3); GenControlFlag();}
                    | expression                                 {CheckBool($1); GenControlFlag();}
                    ;
 
-increment_expression : variable_reference ASSIGN expression      {GenVarStore($1); GenIncreEnd();}
+increment_expression : variable_reference ASSIGN expression      {GenVarStore($1,$3); GenIncreEnd();}
                      | expression_list                           {GenIncreEnd();}
                      ;
 
@@ -422,7 +422,7 @@ identifier : identifier_no_initial
 identifier_no_initial : ID            {InsertIdList(tmp_idlist, $1, NULL, NULL);}
                       | ID array      {InsertIdList(tmp_idlist, $1, tmp_arraysig, NULL); tmp_arraysig = BuildTmpArraySig(); arraysig_isnew = 1;}
                       ;
-identifier_with_initial : ID ASSIGN expression            {InsertIdList(tmp_idlist, $1, NULL, BuildExprAttribute($3)); GenInitialStore($1,globaldecl_buf);}
+identifier_with_initial : ID ASSIGN expression            {InsertIdList(tmp_idlist, $1, NULL, BuildExprAttribute($3)); GenInitialStore($1,globaldecl_buf,$3);}
                         | ID array ASSIGN initial_array   {InsertIdList(tmp_idlist, $1, tmp_arraysig, BuildExprListAttribute($4));  tmp_arraysig = BuildTmpArraySig(); arraysig_isnew = 1;}
                         ;
 

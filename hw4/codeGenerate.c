@@ -130,9 +130,9 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 		    	fprintf(fpout, "\tfadd\n");
 		    }
 		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
-		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\tfstore 99\n");
 		    	fprintf(fpout, "\ti2f\n");
-		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfload 99\n");
 		    	fprintf(fpout, "\tfadd\n");
 		    }
 		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
@@ -149,9 +149,9 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 		    	fprintf(fpout, "\tfsub\n");
 		    }
 		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
-		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\tfstore 99\n");
 		    	fprintf(fpout, "\ti2f\n");
-		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfload 99\n");
 		    	fprintf(fpout, "\tfsub\n");
 		    }
 		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
@@ -168,9 +168,9 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 		    	fprintf(fpout, "\tfmul\n");
 		    }
 		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
-		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\tfstore 99\n");
 		    	fprintf(fpout, "\ti2f\n");
-		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfload 99\n");
 		    	fprintf(fpout, "\tfmul\n");
 		    }
 		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
@@ -187,9 +187,9 @@ void GenArithOp(Expr* LHS, Expr* RHS, const char op){
 		    	fprintf(fpout, "\tfdiv\n");
 		    }
 		    else if(!strcmp(PrintType(LHS->type, LHS->current_dimension), "int") && (!strcmp(PrintType(RHS->type, RHS->current_dimension), "float") || !strcmp(PrintType(RHS->type, RHS->current_dimension), "double"))){	
-		    	fprintf(fpout, "\tfstore 100");
+		    	fprintf(fpout, "\tfstore 99\n");
 		    	fprintf(fpout, "\ti2f\n");
-		    	fprintf(fpout, "\tfload 100");
+		    	fprintf(fpout, "\tfload 99\n");
 		    	fprintf(fpout, "\tfdiv\n");
 		    }
 		    else if((!strcmp(PrintType(LHS->type, LHS->current_dimension), "float") || !strcmp(PrintType(LHS->type, LHS->current_dimension), "double")) && 
@@ -265,26 +265,50 @@ void GenRelOp(Expr* LHS, Expr* RHS, const char* op){
 	fprintf(fpout, "Lfalse_%d:\n", false_index++);
 }
 
-void GenVarStore(Expr* e){
-	if(!strcmp(e->kind, "error")){
+void GenVarStore(Expr* e, Expr* e2){
+	if(!strcmp(e->kind, "error") || !strcmp(e2->kind, "error")){
 		return;
 	}
 	if(e->entry->level != 0){
-		if(!strcmp(PrintType(e->entry->type,0), "int") || !strcmp(PrintType(e->entry->type,0), "bool")){
+		if((!strcmp(PrintType(e->entry->type,0), "int") || !strcmp(PrintType(e->entry->type,0), "bool")) && 
+		   (!strcmp(PrintType(e2->type,0), "int") || !strcmp(PrintType(e2->type,0), "bool"))){
+			fprintf(fpout, "\tistore %d\n", e->entry->local_num);
+		}
+		else if((!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e->entry->type,0), "double")) && !strcmp(PrintType(e2->type,0), "int")){
+			fprintf(fpout, "\ti2f\n");
+			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
+		}
+		else if(!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e2->type,0), "float")){
+			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
+		}
+		else if(!strcmp(PrintType(e->entry->type,0), "double") || !strcmp(PrintType(e2->type,0), "float")){
+			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
+		}
+		else if(!strcmp(PrintType(e->entry->type,0), "double") || !strcmp(PrintType(e2->type,0), "double")){
+			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
+		}
+		/*if(!strcmp(PrintType(e->entry->type,0), "int") || !strcmp(PrintType(e->entry->type,0), "bool")){
 			fprintf(fpout, "\tistore %d\n", e->entry->local_num);
 		}
 		else if(!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e->entry->type,0), "double")){
 			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
-		}
+		}*/
 	}
 	else{
-		if(!strcmp(PrintType(e->type, e->current_dimension), "int")){
+		if(!strcmp(PrintType(e->type, e->current_dimension), "int") && !strcmp(PrintType(e2->type, e2->current_dimension), "int")){
 			fprintf(fpout, "\tputstatic output/%s I\n", e->entry->name);
 		}
-		else if(!strcmp(PrintType(e->type, e->current_dimension), "float")){
+		else if((!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e->entry->type,0), "double")) && !strcmp(PrintType(e2->type, e2->current_dimension), "int")){
+			fprintf(fpout, "\ti2f\n");
 			fprintf(fpout, "\tputstatic output/%s F\n", e->entry->name);
 		}
-		else if(!strcmp(PrintType(e->type, e->current_dimension), "double")){
+		else if(!strcmp(PrintType(e->type, e->current_dimension), "float") && !strcmp(PrintType(e2->type, e2->current_dimension), "float")){
+			fprintf(fpout, "\tputstatic output/%s F\n", e->entry->name);
+		}
+		else if(!strcmp(PrintType(e->type, e->current_dimension), "double") && !strcmp(PrintType(e2->type, e2->current_dimension), "float")){
+			fprintf(fpout, "\tputstatic output/%s D\n", e->entry->name);
+		}
+		else if(!strcmp(PrintType(e->type, e->current_dimension), "double") && !strcmp(PrintType(e2->type, e2->current_dimension), "double")){
 			fprintf(fpout, "\tputstatic output/%s D\n", e->entry->name);
 		}
 		else if(!strcmp(PrintType(e->type, e->current_dimension), "bool")){
@@ -293,11 +317,35 @@ void GenVarStore(Expr* e){
 	}
 }
 
-void GenInitialStore(const char* name, Type* t){
+void GenInitialStore(const char* name, Type* t, Expr* e){
 	int size;
+	//printf("%s %s\n",PrintType(t,0));
 	if(symbol_table->current_level != 0){
 		size = tmp_idlist->current_size;
-		fprintf(fpout, "\tistore %d\n", size+symbol_table->next_local_num-1);
+		if(!strcmp(PrintType(t,0), "int") && !strcmp(PrintType(e->type,0), "int")){
+			fprintf(fpout, "\tistore %d\n", size+symbol_table->next_local_num-1);
+		}
+		else if(!strcmp(PrintType(t,0), "float") && !strcmp(PrintType(e->type,0), "int")){
+			fprintf(fpout, "\ti2f\n");
+			fprintf(fpout, "\tfstore %d\n", size+symbol_table->next_local_num-1);
+		}
+		else if(!strcmp(PrintType(t,0), "double") && !strcmp(PrintType(e->type,0), "int")){
+			fprintf(fpout, "\ti2f\n");
+			fprintf(fpout, "\tfstore %d\n", size+symbol_table->next_local_num-1);
+		}
+		else if(!strcmp(PrintType(t,0), "float") && !strcmp(PrintType(e->type,0), "float")){
+			fprintf(fpout, "\tfstore %d\n", size+symbol_table->next_local_num-1);
+		}
+		else if(!strcmp(PrintType(t,0), "double") && !strcmp(PrintType(e->type,0), "float")){
+			fprintf(fpout, "\tfstore %d\n", size+symbol_table->next_local_num-1);
+		}
+		else if(!strcmp(PrintType(t,0), "double") && !strcmp(PrintType(e->type,0), "double")){
+			fprintf(fpout, "\tfstore %d\n", size+symbol_table->next_local_num-1);
+		}
+		else if(!strcmp(PrintType(t,0), "bool")){
+			fprintf(fpout, "\tistore %d\n", size+symbol_table->next_local_num-1);
+		}
+		//fprintf(fpout, "\tistore %d\n", size+symbol_table->next_local_num-1);
 		return;
 	}
 	else{
@@ -350,7 +398,32 @@ void GenReadInvoke(Expr* e){
 		fprintf(fpout, "\tinvokevirtual java/util/Scanner/nextBoolean()Z\n");
 	}
 
-	GenVarStore(e);
+	//GenVarStore(e);
+	if(!strcmp(e->kind, "error")){
+		return;
+	}
+	if(e->entry->level != 0){
+		if(!strcmp(PrintType(e->entry->type,0), "int") || !strcmp(PrintType(e->entry->type,0), "bool")){
+			fprintf(fpout, "\tistore %d\n", e->entry->local_num);
+		}
+		else if(!strcmp(PrintType(e->entry->type,0), "float") || !strcmp(PrintType(e->entry->type,0), "double")){
+			fprintf(fpout, "\tfstore %d\n", e->entry->local_num);
+		}
+	}
+	else{
+		if(!strcmp(PrintType(e->type, e->current_dimension), "int")){
+			fprintf(fpout, "\tputstatic output/%s I\n", e->entry->name);
+		}
+		else if(!strcmp(PrintType(e->type, e->current_dimension), "float")){
+			fprintf(fpout, "\tputstatic output/%s F\n", e->entry->name);
+		}
+		else if(!strcmp(PrintType(e->type, e->current_dimension), "double")){
+			fprintf(fpout, "\tputstatic output/%s D\n", e->entry->name);
+		}
+		else if(!strcmp(PrintType(e->type, e->current_dimension), "bool")){
+			fprintf(fpout, "\tputstatic output/%s Z\n", e->entry->name);
+		}
+	}
 }
 
 void GenFuncInitialization(const char* name){
